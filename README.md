@@ -51,8 +51,5 @@ The project segments customers into clusters such as:
 - Deploy as a web-based dashboard
 
 ## Author
-[Your Name]
-
-## License
-This project is licensed under the MIT License.
+Kurt Maxwell Kusterer
 
