@@ -4,6 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
+from sklearn.preprocessing import MinMaxScaler
 
 from clustering import load_data, run_kmeans, compute_wcss, run_hierarchical
 
@@ -21,15 +22,19 @@ def get_data():
 
 @st.cache_data
 def get_clusters(k):
-    return run_kmeans(load_data(), k)
+    return run_kmeans(get_data(), k)
 
 @st.cache_data
 def get_wcss():
-    return compute_wcss(load_data())
+    return compute_wcss(get_data())
 
 @st.cache_data
 def get_hierarchical():
-    return run_hierarchical(load_data())
+    return run_hierarchical(get_data())
+
+@st.cache_data
+def get_dendrogram(features_array):
+    return ff.create_dendrogram(features_array, orientation='bottom', color_threshold=0.7)
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 
@@ -287,12 +292,8 @@ with tab3:
         'The dashed red line shows where cutting the tree produces clusters comparable to K-Means.'
     )
 
-    # Dendrogram via plotly figure_factory
-    fig = ff.create_dendrogram(
-        features_scaled.values,
-        orientation='bottom',
-        color_threshold=0.7
-    )
+    # Dendrogram — cached so it only computes once on startup
+    fig = get_dendrogram(features_scaled.values)
     fig.update_layout(
         title='Customer Dendrogram (Ward Linkage)',
         xaxis=dict(title='Customers (individual IDs suppressed)', showticklabels=False),
@@ -319,7 +320,6 @@ with tab3:
     df_sorted = df_sorted.sort_values('_sort')
 
     heatmap_features = ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
-    from sklearn.preprocessing import MinMaxScaler
     scaler_h = MinMaxScaler()
     heatmap_data = pd.DataFrame(
         scaler_h.fit_transform(df_sorted[heatmap_features]),
